@@ -624,7 +624,9 @@ static void playback_stream_write_callback(pa_stream *stream, size_t nbytes, voi
     struct SoundIoOutStreamPrivate *os = (struct SoundIoOutStreamPrivate*)(userdata);
     struct SoundIoOutStream *outstream = &os->pub;
     int frame_count = nbytes / outstream->bytes_per_frame;
-    outstream->write_callback(outstream, 0, frame_count);
+
+    if (!pa_stream_is_corked(stream))
+        outstream->write_callback(outstream, 0, frame_count);
 }
 
 static void outstream_destroy_pa(struct SoundIoPrivate *si, struct SoundIoOutStreamPrivate *os) {
@@ -863,7 +865,9 @@ static void recording_stream_read_callback(pa_stream *stream, size_t nbytes, voi
     assert(nbytes % instream->bytes_per_frame == 0);
     assert(nbytes > 0);
     int available_frame_count = nbytes / instream->bytes_per_frame;
-    instream->read_callback(instream, 0, available_frame_count);
+
+    if (!pa_stream_is_corked(stream))
+        instream->read_callback(instream, 0, available_frame_count);
 }
 
 static void instream_destroy_pa(struct SoundIoPrivate *si, struct SoundIoInStreamPrivate *is) {
