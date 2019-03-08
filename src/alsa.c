@@ -1161,6 +1161,9 @@ static void outstream_thread_run(void *arg) {
                     continue;
                 }
 
+                if (osa->is_paused)
+                    continue;
+
                 snd_pcm_sframes_t avail = snd_pcm_avail_update(osa->handle);
                 if (avail < 0) {
                     if ((err = outstream_xrun_recovery(os, avail)) < 0) {
@@ -1230,6 +1233,9 @@ static void instream_thread_run(void *arg) {
                 }
                 if (!SOUNDIO_ATOMIC_FLAG_TEST_AND_SET(isa->thread_exit_flag))
                     return;
+
+                if (isa->is_paused)
+                    continue;
 
                 snd_pcm_sframes_t avail = snd_pcm_avail_update(isa->handle);
 
